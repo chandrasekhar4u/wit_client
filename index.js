@@ -13,6 +13,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const Wit = require('./').Wit;
 require('./chat-server.js');
+const mg = require('./message.js');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -35,6 +36,20 @@ const firstEntityValue = (entities, entity) => {
     return null;
   }
   return typeof val === 'object' ? val.value : val;
+};
+
+const getFirstMessagingEntry = (body) => {
+  const val = body.object === 'msg' &&
+    body.entry &&
+    Array.isArray(body.entry) &&
+    body.entry.length > 0 &&
+    body.entry[0] &&
+    body.entry[0].messaging &&
+    Array.isArray(body.entry[0].messaging) &&
+    body.entry[0].messaging.length > 0 &&
+    body.entry[0].messaging[0];
+
+  return val || null;
 };
 
 const actions = {
@@ -71,6 +86,21 @@ const actions = {
   },
 };
 
+const sessions = {};
+
+const findOrCreateSession = () => {
+  var sessionId;
+    // No session found, let's create a new one
+    sessionId = new Date().toISOString();
+    sessions[sessionId] = {
+      sessionId: sessionId,
+      context: {
+        _sessionId_: sessionId
+      }
+    }; // set context, _sessionId_
+  return sessionId;
+};
+
 app.get('/frontend.html', function(request, response){
     response.sendFile(path.join(__dirname+'/frontend.html'));
 });
@@ -84,11 +114,51 @@ app.post('/webhook', (req, res) => {
 });
 
 app.post('/callwit', (req, res) => {
-  res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
+	// Parsing the Messenger API response
+  const messaging = getFirstMessagingEntry(req.body);
+    
+	const client = new Wit('LN4ZRTK5KULKZZUKI33WMM3I7J3QGA33', actions);
+	console.log('wit client object: ' + client);
+	
+    // We retrieve the user's current session, or create one if it doesn't exist
+    // This is needed for our bot to figure out the conversation history
+    const sessionId = findOrCreateSession();
+	console.log('sessionID: ' + sessionId);
+	// We retrieve the message content
+    const msg = messaging.message.text;
+	console.log('user message: ' + msg);
+	if (msg) {
+      // We received a text message
+
+      // Let's forward the message to the Wit.ai Bot Engine
+      // This will run all actions until our bot has nothing left to do
+      client.runActions(
+        sessionId, // the user's current session
+        msg, // the user's message 
+        sessions[sessionId].context, // the user's current session state
+        (error, context) => {
+          if (error) {
+            console.log('Oops! Got an error from Wit:', error);
+          } else {
+            console.log('Waiting for futher messages.');
+            // Updating the user's current session state
+            sessions[sessionId].context = context;
+          }
+		  console.log('final msg: '+client.respMsg());
+		  res.send(client.respMsg())
+        }
+      );
+    }
+	console.log('Response Object: ' + res);
+	
+  //res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
 });
+
 
 // Webhook verify setup using FB_VERIFY_TOKEN
 app.get('/webhook', (req, res) => {
     res.sendStatus(400);
 });
+
+
 
