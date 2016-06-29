@@ -24,7 +24,7 @@ $(function () {
     }
 
     // open connection
-    var connection = new WebSocket('ws://nodewitclient.herokuapp.com:8443');
+    var connection = new WebSocket('https://nodewitclient.herokuapp.com:8443');
 
     connection.onopen = function () {
         // first we want users to enter their names
