@@ -12,12 +12,15 @@ module.exports = {
 const bodyParser = require('body-parser');
 const express = require('express');
 const Wit = require('./').Wit;
+require('./chat-server.js');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
 
 // Starting our webserver and putting it all together
 const app = express();
+var path = require("path");
+//var expressWs = require('express-ws')(app);
 app.set('port', PORT);
 app.listen(app.get('port'));
 app.use(bodyParser.json());
@@ -68,8 +71,19 @@ const actions = {
   },
 };
 
+app.get('/frontend.html', function(request, response){
+    response.sendFile(path.join(__dirname+'/frontend.html'));
+});
+app.get('/chat-frontend.js', function(request, response){
+    response.sendFile(path.join(__dirname+'/chat-frontend.js'));
+});
+
 // The main message handler
 app.post('/webhook', (req, res) => {
+  res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
+});
+
+app.post('/callwit', (req, res) => {
   res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
 });
 
