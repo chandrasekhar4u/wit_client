@@ -113,6 +113,10 @@ app.get('/chat-frontend.js', function(request, response, next){
 	next();
 });
 
+app.get('/botTest.html', function(request, response, next){
+    response.sendFile(path.join(__dirname+'/botTest.html'));
+});
+
 // The main message handler
 app.post('/webhook', (req, res, next) => {
   res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
