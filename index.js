@@ -10,20 +10,25 @@ module.exports = {
 // When not cloning the `node-wit` repo, replace the `require` like so:
 // const Wit = require('node-wit').Wit;
 const bodyParser = require('body-parser');
-const express = require('express');
 const Wit = require('./').Wit;
 //require('./chat-server.js');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
 
+var express = require('express')
+  , cors = require('cors')
+  , app = express();
+
+app.use(cors());
+
 // Starting our webserver and putting it all together
-const app = express();
 var path = require("path");
 //var expressWs = require('express-ws')(app);
 app.set('port', PORT);
 app.listen(app.get('port'));
 app.use(bodyParser.json());
+
 console.log("I'm wating for you @" + PORT);
 
 const firstEntityValue = (entities, entity) => {
@@ -100,16 +105,18 @@ const findOrCreateSession = () => {
   return sessionId;
 };
 
-app.get('/frontend.html', function(request, response){
+app.get('/frontend.html', function(request, response, next){
     response.sendFile(path.join(__dirname+'/frontend.html'));
 });
-app.get('/chat-frontend.js', function(request, response){
+app.get('/chat-frontend.js', function(request, response, next){
     response.sendFile(path.join(__dirname+'/chat-frontend.js'));
+	next();
 });
 
 // The main message handler
-app.post('/webhook', (req, res) => {
+app.post('/webhook', (req, res, next) => {
   res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
+  next();
 });
 
 app.post('/callwit', (req, res) => {
@@ -151,12 +158,14 @@ app.post('/callwit', (req, res) => {
 	console.log('Response Object: ' + res);
 	
   //res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
+ // next();
 });
 
 
 // Webhook verify setup using FB_VERIFY_TOKEN
-app.get('/webhook', (req, res) => {
+app.get('/webhook', (req, res, next) => {
     res.sendStatus(400);
+	next();
 });
 
 
