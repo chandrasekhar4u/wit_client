@@ -127,7 +127,7 @@ app.post('/callwit', (req, res) => {
 	// Parsing the Messenger API response
   const messaging = getFirstMessagingEntry(req.body);
     
-	const client = new Wit('LN4ZRTK5KULKZZUKI33WMM3I7J3QGA33', actions);
+	const client = new Wit('Q5QNSIZLFDIGWGSIZ7VQYF5AGD5ACECL', actions);
 	console.log('wit client object: ' + client);
 	
     // We retrieve the user's current session, or create one if it doesn't exist
