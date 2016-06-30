@@ -33,7 +33,8 @@ var settings = {
 
 $.ajax(settings).done(function (response) {
   console.log(response);
-  $( "#resp" ).append( response + '</br>' );
+  $( "#resp" ).append( response );
+  $('#AssetId').val('');
 });
 }
 </script>
