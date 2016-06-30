@@ -12,7 +12,7 @@ module.exports = {
 const bodyParser = require('body-parser');
 const express = require('express');
 const Wit = require('./').Wit;
-require('./chat-server.js');
+//require('./chat-server.js');
 const mg = require('./message.js');
 
 // Webserver parameter
