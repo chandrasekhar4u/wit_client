@@ -113,6 +113,10 @@ app.get('/chat-frontend.js', function(request, response, next){
 	next();
 });
 
+app.get('/botTest.html', function(request, response, next){
+    response.sendFile(path.join(__dirname+'/botTest.html'));
+});
+
 // The main message handler
 app.post('/webhook', (req, res, next) => {
   res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
@@ -123,7 +127,7 @@ app.post('/callwit', (req, res) => {
 	// Parsing the Messenger API response
   const messaging = getFirstMessagingEntry(req.body);
     
-	const client = new Wit('LN4ZRTK5KULKZZUKI33WMM3I7J3QGA33', actions);
+	const client = new Wit('Q5QNSIZLFDIGWGSIZ7VQYF5AGD5ACECL', actions);
 	console.log('wit client object: ' + client);
 	
     // We retrieve the user's current session, or create one if it doesn't exist
