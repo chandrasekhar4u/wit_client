@@ -4,14 +4,8 @@ module.exports = {
   Wit: require('./lib/wit.js').Wit,
 }
 
-// Quickstart example
-// See https://wit.ai/l5t/Quickstart
-
-// When not cloning the `node-wit` repo, replace the `require` like so:
-// const Wit = require('node-wit').Wit;
 const bodyParser = require('body-parser');
 const Wit = require('./').Wit;
-//require('./chat-server.js');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -19,12 +13,11 @@ const PORT = process.env.PORT || 8445;
 var express = require('express')
   , cors = require('cors')
   , app = express();
-
+//fix for security format exception from browser.
 app.use(cors());
 
 // Starting our webserver and putting it all together
 var path = require("path");
-//var expressWs = require('express-ws')(app);
 app.set('port', PORT);
 app.listen(app.get('port'));
 app.use(bodyParser.json());
@@ -70,21 +63,6 @@ const actions = {
     }
     cb(context);
   },
-  ['fetch-weather'](sessionId, context, cb) {
-    // Here should go the api call, e.g.:
-    // context.forecast = apiCall(context.loc)
-	switch(context.loc){
-		case 'bangalore','hyderabad':
-			context.forecast = "sunny";
-			break;
-		case 'america', 'canada':
-			context.forecast = "rainy";
-			break;
-		default:
-			context.forecast = "foggy";
-	}
-    cb(context);
-  },
   error(sessionId, context, error) {
     console.log(error.message);
   },
@@ -105,30 +83,16 @@ const findOrCreateSession = () => {
   return sessionId;
 };
 
-app.get('/frontend.html', function(request, response, next){
-    response.sendFile(path.join(__dirname+'/frontend.html'));
-});
-app.get('/chat-frontend.js', function(request, response, next){
-    response.sendFile(path.join(__dirname+'/chat-frontend.js'));
-	next();
-});
-
 app.get('/botTest.html', function(request, response, next){
     response.sendFile(path.join(__dirname+'/botTest.html'));
 });
 
-// The main message handler
-app.post('/webhook', (req, res, next) => {
-  res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
-  next();
-});
-
+// callwit is the main service which takes care of calling wit.ai
 app.post('/callwit', (req, res) => {
 	// Parsing the Messenger API response
-  const messaging = getFirstMessagingEntry(req.body);
-    
-	const client = new Wit('Q5QNSIZLFDIGWGSIZ7VQYF5AGD5ACECL', actions);
-	console.log('wit client object: ' + client);
+	const messaging = getFirstMessagingEntry(req.body);
+	const wit = new Wit('Q5QNSIZLFDIGWGSIZ7VQYF5AGD5ACECL', actions);
+	console.log('wit client object: ' + wit);
 	
     // We retrieve the user's current session, or create one if it doesn't exist
     // This is needed for our bot to figure out the conversation history
@@ -139,10 +103,8 @@ app.post('/callwit', (req, res) => {
 	console.log('user message: ' + msg);
 	if (msg) {
       // We received a text message
-
-      // Let's forward the message to the Wit.ai Bot Engine
-      // This will run all actions until our bot has nothing left to do
-      client.runActions(
+      // Let's forward the message to the Wit.ai Bot Engine, This will run all actions until our bot has nothing left to do
+      wit.runActions(
         sessionId, // the user's current session
         msg, // the user's message 
         sessions[sessionId].context, // the user's current session state
@@ -154,8 +116,8 @@ app.post('/callwit', (req, res) => {
             // Updating the user's current session state
             sessions[sessionId].context = context;
           }
-		  console.log('final msg: '+client.respMsg());
-		  res.send(client.respMsg())
+		  console.log('final msg: '+wit.respMsg());
+		  res.send(wit.respMsg())
         }
       );
     }
@@ -165,8 +127,13 @@ app.post('/callwit', (req, res) => {
  // next();
 });
 
+// another example post service
+app.post('/webhook', (req, res, next) => {
+  res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
+  next();
+});
 
-// Webhook verify setup using FB_VERIFY_TOKEN
+// Webhook get method sends status 400
 app.get('/webhook', (req, res, next) => {
     res.sendStatus(400);
 	next();
