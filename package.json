@@ -1,7 +1,7 @@
 {
-  "name": "node-wit",
-  "version": "3.3.2",
-  "description": "Wit.ai Node.js SDK",
+  "name": "node_wit_client",
+  "version": "1.0",
+  "description": "node application for wit client",
   "keywords": [
     "wit",
     "wit.ai",
@@ -9,11 +9,12 @@
     "botengine",
     "bots",
     "nlp",
+    "node",
     "automation"
   ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    	"test": "echo \"Error: no test specified\" && exit 1",
 	"start": "node index.js"
   },
   "repository": "https://github.com/chandrasekhar4u/node_wit_client",
@@ -21,9 +22,9 @@
   "license": "MIT",
   "dependencies": {
 	"body-parser": "^1.15.2",
-    "express": "^4.13.4",
-    "node-fetch": "^1.5.1",
-    "node-uuid": "^1.4.7",
+    	"express": "^4.13.4",
+    	"node-fetch": "^1.5.1",
+    	"node-uuid": "^1.4.7",
 	"ws": "^1.0.23",
 	"websocket": "^1.0.23",
 	"cors": "^2.7.1",
