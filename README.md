@@ -21,5 +21,9 @@ go to the application location <br/>
 `$ git commit -m "your comment"` <br/>
 `$ git push heroku master` <br/>
 
-
+## Task List
+- [x] Client to communicate with node.js services.
+- [ ] support formatted json request
+- [ ] support formatted json response
+- [ ] get intent from the wit.ai ans show it in response.
 <!-- ## Developing -->
