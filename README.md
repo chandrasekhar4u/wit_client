@@ -26,4 +26,5 @@ go to the application location <br/>
 - [ ] support formatted json request
 - [ ] support formatted json response
 - [ ] get intent from the wit.ai ans show it in response.
+
 <!-- ## Developing -->
