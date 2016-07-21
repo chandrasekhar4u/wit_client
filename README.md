@@ -1,7 +1,7 @@
-# node_wit_client
-Nodejs application with a client which connects to wit.ai server and displays response in web client.
+# node_wit_client :zap: 
+:sunny: Nodejs application with a client which connects to wit.ai server and displays response in web client.
 
-## Usage
+## Usage :zap: 
 install <a href="https://nodejs.org/en/download/" >node.js</a> <br/>
 install <a href="https://toolbelt.heroku.com/" >heroku toolbelt</a> (for windows) <br/>
 `git clone https://github.com/{forked}/node_wit_client.git` <br/>
