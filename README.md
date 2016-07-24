@@ -1,6 +1,8 @@
 # node_wit_client :zap: 
 :sunny: Nodejs application with a client which connects to wit.ai server and displays response in web client.
 
+[![Dependency Status](https://dependencyci.com/github/chandrasekhar4u/node_wit_client/badge)](https://dependencyci.com/github/chandrasekhar4u/node_wit_client)
+
 ## Usage :zap: 
 install <a href="https://nodejs.org/en/download/" >node.js</a> <br/>
 install <a href="https://toolbelt.heroku.com/" >heroku toolbelt</a> (for windows) <br/>
