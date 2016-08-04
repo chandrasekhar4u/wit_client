@@ -91,7 +91,7 @@ app.get('/botTest.html', function(request, response, next){
 app.post('/callwit', (req, res) => {
 	// Parsing the Messenger API response
 	const messaging = getFirstMessagingEntry(req.body);
-	const wit = new Wit('Q5QNSIZLFDIGWGSIZ7VQYF5AGD5ACECL', actions);
+	const wit = new Wit('W47X2VGODXS4P22XQHCPHGD2X7RDQTY7', actions);
 	console.log('wit client object: ' + wit);
 	
     // We retrieve the user's current session, or create one if it doesn't exist
