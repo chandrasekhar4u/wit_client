@@ -1,8 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script   src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"   integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E="   crossorigin="anonymous"></script>
+<style>
+#resp {
+    -moz-appearance: textfield-multiline;
+    -webkit-appearance: textarea;
+    border: 1px solid gray;
+    font: medium -moz-fixed;
+    font: -webkit-small-control;
+    height: 105px;
+    overflow: auto;
+    padding: 2px;
+    resize: both;
+}
+</style>
+
 <script>
+function strip(html)
+{
+   var tmp = document.createElement("DIV");
+   tmp.innerHTML = html;
+   return tmp.textContent||tmp.innerText;
+}
 function getContent(){
 var settings = {
   "async": true,
@@ -33,22 +54,28 @@ var settings = {
 
 $.ajax(settings).done(function (response) {
   console.log(response);
-  $( "#resp" ).append( response );
+  $( "#resp").text($("#resp").text());
+  $( "#resp" ).append( '<b>' + response.text + '</b>' + '\n');
+  $( "#jsonContent" ).text( JSON.stringify(response.entities, null, '\t') );
+   $("#jsonContent").animate({
+    color: "white",
+    backgroundColor: "rgb( 20, 20, 20 )"
+  }, 3000);
+  $("h3").text("Entities:");
   $('#AssetId').val('');
 });
 }
 </script>
 </head>
 <body>
-
 <p>Start typing message in below texarea:</p>
-User Says:<br/>
-
-<textarea rows="5" cols="50" id="AssetId"></textarea><br/>
+<h2>User Says:</h2>
+<textarea rows="5" style="width:90%" id="AssetId"></textarea><br/>
 <input type="button" value="Send Message" onclick="javascript:getContent()" />
-<p>Bot Reply: <span></span></p>
-<textarea rows="10" cols="50" id="resp" disabled="true"></textarea>
-
+<p><h2>Bot Reply:</h2> <span></span></p>
+<div id="resp" style="white-space: pre-wrap; width:90%;"></div>
+<h3></h3>
+<pre id="jsonContent"></pre>
 </body>
 </html>
 

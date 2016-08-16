@@ -5,7 +5,7 @@ module.exports = {
 }
 const bodyParser = require('body-parser');
 //const Wit = require('./').Wit;
-var msg = '';
+var responseObj = {};
 // Webserver parameter
 const PORT = process.env.PORT || 8005;
 
@@ -61,13 +61,16 @@ const getFirstMessagingEntry = (body) => {
 
 const actions = {
   send(request, response) {
-	  msg='';
     const {sessionId, context, entities} = request;
     const {text, quickreplies} = response;
 	return new Promise(function(resolve, reject) {
       console.log('sending...', JSON.stringify(response));
 	  let resl = resolve();
-	  msg = msg + JSON.stringify(text) + '\n' + JSON.stringify(entities);
+	  responseObj.sessionId = sessionId;
+	  responseObj.context = context;
+	  responseObj.entities = entities;
+	  responseObj.text = text;
+	  responseObj.quickreplies = quickreplies;
       return resl;
     });
   },
@@ -131,8 +134,8 @@ app.post('/callwit', (req, res) => {
               console.log('Waiting for next user messages');
               // Updating the user's current session state
               sessions[sessionId].context = context;
-			  console.log('final msg: '+JSON.stringify(msg));
-		      res.send(msg)
+			  //console.log('final msg: '+JSON.stringify(responseObj));
+		      res.send(responseObj)
             })
             .catch((err) => {
               console.error('Oops! Got an error from Wit: ', err.stack || err);
