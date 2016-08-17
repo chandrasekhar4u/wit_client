@@ -3,9 +3,9 @@
 
 [![Dependency Status](https://dependencyci.com/github/chandrasekhar4u/node_wit_client/badge)](https://dependencyci.com/github/chandrasekhar4u/node_wit_client)
 
-## Usage :zap: 
-install <a href="https://nodejs.org/en/download/" >node.js</a> <br/>
-install <a href="https://toolbelt.heroku.com/" >heroku toolbelt</a> (for windows) <br/>
+## Usage & Deploying in Heroku :zap: 
+Install <a href="https://nodejs.org/en/download/" >node.js</a> <br/>
+Install <a href="https://toolbelt.heroku.com/" >heroku toolbelt</a> (for windows) <br/>
 `git clone https://github.com/{forked}/node_wit_client.git` <br/>
 Open Node.js command prompt... <br/>
 `$ cd node_wit_client/`  <br/>
@@ -17,7 +17,7 @@ Enter your Heroku credentials. <br/>
 Email: adam@example.com <br/>
 Password (typing will be hidden): <br/>
 Authentication successful. <br/>
-go to the application location <br/>
+Go to the application location <br/>
 `$ heroku git:remote -a appName` (while creting app first time, else fallow below steps)  <br/>
 `$ git add . ` <br/>
 `$ git commit -m "your comment"` <br/>
@@ -25,7 +25,7 @@ go to the application location <br/>
 
 ## Running Application :zap:
 Run `npm start` Or `node index.js` from node command prompt in the folder `node_wit_client/`. <br/>
-if nodejs is < 6.x version then run with command `node --harmony_destructuring --use_strict index.js`.
+If nodejs is < 6.x version then run with command `node --harmony_destructuring --use_strict index.js`.
 
 Open the browser and give the url `http://localhost:port/botTest.html`, then we should be able to see the screen with user says and bot says text areas.
 
