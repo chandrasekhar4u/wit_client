@@ -23,10 +23,19 @@ go to the application location <br/>
 `$ git commit -m "your comment"` <br/>
 `$ git push heroku master` <br/>
 
+## Running Application :zap:
+Run `npm start` Or `node index.js` from node command prompt in the folder `node_wit_client/`. <br/>
+if nodejs is < 6.x version then run with command `node --harmony_destructuring --use_strict index.js`.
+
+Open the browser and give the url `http://localhost:port/botTest.html`, then we should be able to see the screen with user says and bot says text areas.
+
 ## Task List :zap:
 - [x] Client to communicate with node.js services.
-- [ ] support formatted json request
-- [ ] support formatted json response
-- [ ] get intent from the wit.ai ans show it in response.
+- [x] Support formatted json request
+- [x] Support formatted json response
+- [x] Get entities/intent from the wit.ai and show it in response.
+- [ ] Show ajax request loading spinner and disable send message button.
+- [ ] Session/transaction management.
+- [ ] Custom functions should be able to invoke from wit.ai or shold be able to invoke based on entities/context.
 
 <!-- ## Developing -->
