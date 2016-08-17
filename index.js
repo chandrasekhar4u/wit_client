@@ -4,7 +4,6 @@ module.exports = {
   interactive: require('./lib/interactive')
 }
 const bodyParser = require('body-parser');
-//const Wit = require('./').Wit;
 var responseObj = {};
 // Webserver parameter
 const PORT = process.env.PORT || 8005;
@@ -14,10 +13,13 @@ const fetch = require('node-fetch');
 const request = require('request');
 var express = require('express')
   , cors = require('cors')
-  , app = express();
+  , app = express()
+  , favicon = require('serve-favicon')
+  , path = require("path");
+  
 //fix for security format exception from browser.
 app.use(cors());
-
+app.use(favicon(path.join(__dirname+'/favicon.ico')));
 let log = null;
 let Wit = null;
 try {
@@ -28,7 +30,6 @@ try {
   log = require('node-wit').log;
 }
 // Starting our webserver and putting it all together
-var path = require("path");
 app.set('port', PORT);
 app.listen(app.get('port'));
 app.use(bodyParser.json());
@@ -74,6 +75,16 @@ const actions = {
       return resl;
     });
   },
+  ['getCreditCardDetails']({context, entities}) {
+	console.log('entities custom action: '+JSON.stringify(entities));
+    return new Promise(function(resolve, reject) {
+	  console.log('entities custom action: '+JSON.stringify(entities));
+      context.cardNumber = 'xxxx-xxxx-xxxx-'+Math.floor(1000 + Math.random() * 9000);
+	  responseObj.context = context;
+	  responseObj.entities = entities;
+      return resolve(context);
+    });
+  },
 };
 
 const sessions = {};
@@ -94,10 +105,11 @@ const findOrCreateSession = (sid) => {
   return sessionId;
 };
 
+//TODO: move this to common static content handling.
+//allow static content to access from application.
 app.get('/botTest.html', function(request, response, next){
     response.sendFile(path.join(__dirname+'/botTest.html'));
 });
-
 app.get('/spinner.gif', function(request, response, next){
     response.sendFile(path.join(__dirname+'/spinner.gif'));
 });
