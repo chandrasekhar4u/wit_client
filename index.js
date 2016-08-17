@@ -98,6 +98,10 @@ app.get('/botTest.html', function(request, response, next){
     response.sendFile(path.join(__dirname+'/botTest.html'));
 });
 
+app.get('/spinner.gif', function(request, response, next){
+    response.sendFile(path.join(__dirname+'/spinner.gif'));
+});
+
 
 // Message handler
 app.post('/callwit', (req, res) => {
