@@ -45,16 +45,11 @@ var settings = {
         }
       ]
     }
-  ],
-   beforeSend: function () {
-                $("#wait").css("display", "block");
-   },
-   complete: function () {
-                $("#wait").css("display", "none");
-   }
+  ]
 })
 }
 $("#wait").css("display", "block");
+$("#sendMsg").attr("disabled", true);
 $.ajax(settings).done(function (response) {
   console.log(response);
   $( "#resp").text($("#resp").text());
@@ -68,6 +63,7 @@ $.ajax(settings).done(function (response) {
   $("h3").text("Entities:");
   $('#AssetId').val('');
    $("#wait").css("display", "none");
+   $("#sendMsg").attr("disabled", false);
 });
 }
 </script>
@@ -76,7 +72,7 @@ $.ajax(settings).done(function (response) {
 <p>Start typing message in below texarea:</p>
 <h2>User Says:</h2>
 <textarea rows="5" style="width:90%" id="AssetId"></textarea><br/>
-<input type="button" value="Send Message" onclick="javascript:getContent()" />
+<input type="button" id="sendMsg" value="Send Message" onclick="javascript:getContent()" />
 <div id="wait"><img id="loadingimg" src="./spinner.gif"/></div>
 <p><h2>Bot Reply:</h2> <span></span></p>
 <div id="resp" style="white-space: pre-wrap; width:90%;"></div>
