@@ -18,7 +18,7 @@
 	"start": "node --harmony_destructuring --use_strict index.js"
   },
   "repository": "https://github.com/chandrasekhar4u/node_wit_client",
-  "author": "",
+  "author": "Chandra",
   "license": "MIT",
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
