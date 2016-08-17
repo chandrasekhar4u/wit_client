@@ -54,7 +54,7 @@ var settings = {
    }
 })
 }
-
+$("#wait").css("display", "block");
 $.ajax(settings).done(function (response) {
   console.log(response);
   $( "#resp").text($("#resp").text());
@@ -67,6 +67,7 @@ $.ajax(settings).done(function (response) {
   }, 2000);
   $("h3").text("Entities:");
   $('#AssetId').val('');
+   $("#wait").css("display", "none");
 });
 }
 </script>
