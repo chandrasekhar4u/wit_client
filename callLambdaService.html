@@ -16,7 +16,9 @@ var settings = {
 }
 $.ajax(settings).done(function (response) {
   console.log(response);
-  $( "#resp" ).append( response );
+  if(response){
+  $( "#resp" ).text( JSON.stringify(response, null, '\t') );
+  }
   $('#UserId').val('');
 });
 }
