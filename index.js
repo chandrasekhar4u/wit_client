@@ -1,13 +1,16 @@
+//import requried modules from library.
 module.exports = {
   log: require('./lib/log'),
   Wit: require('./lib/wit'),
   interactive: require('./lib/interactive')
 }
+//import body parser.
 const bodyParser = require('body-parser');
+//initializing response object.
 var responseObj = {};
 // Webserver parameter
 const PORT = process.env.PORT || 8005;
-
+//import required dependencies.
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const request = require('request');
@@ -19,7 +22,9 @@ var express = require('express')
   
 //fix for security format exception from browser.
 app.use(cors());
+//fix for accessing favicon and showing in browserr.
 app.use(favicon(path.join(__dirname+'/favicon.ico')));
+//var initialization.
 let log = null;
 let Wit = null;
 try {
@@ -36,6 +41,7 @@ app.use(bodyParser.json());
 
 console.log("Server is wating for you @" + PORT);
 
+//get first entity valure from entities list.
 const firstEntityValue = (entities, entity) => {
   const val = entities && entities[entity] &&
     Array.isArray(entities[entity]) &&
@@ -47,19 +53,7 @@ const firstEntityValue = (entities, entity) => {
   return typeof val === 'object' ? val.value : val;
 };
 
-const getFirstMessagingEntry = (body) => {
-  const val = body.object === 'msg' &&
-    body.entry &&
-    Array.isArray(body.entry) &&
-    body.entry.length > 0 &&
-    body.entry[0] &&
-    body.entry[0].messaging &&
-    Array.isArray(body.entry[0].messaging) &&
-    body.entry[0].messaging.length > 0 &&
-    body.entry[0].messaging[0];
-  return val || null;
-};
-
+//initializing constants.
 const actions = {
   send(request, response) {
     const {sessionId, context, entities} = request;
@@ -67,6 +61,7 @@ const actions = {
 	return new Promise(function(resolve, reject) {
       console.log('sending...', JSON.stringify(response));
 	  let resl = resolve();
+	  //assigning response data.
 	  responseObj.sessionId = sessionId;
 	  responseObj.context = context;
 	  responseObj.entities = entities;
@@ -75,6 +70,7 @@ const actions = {
       return resl;
     });
   },
+  //custom action called from wit.ai
   ['getCreditCardDetails']({context, entities}) {
 	console.log('entities custom action: '+JSON.stringify(entities));
     return new Promise(function(resolve, reject) {
@@ -87,6 +83,7 @@ const actions = {
   },
 };
 
+//find or create session object (ISO date).
 const sessions = {};
 const findOrCreateSession = (sid) => {
   let sessionId;
@@ -109,6 +106,9 @@ const findOrCreateSession = (sid) => {
 //allow static content to access from application.
 app.get('/botTest.html', function(request, response, next){
     response.sendFile(path.join(__dirname+'/botTest.html'));
+});
+app.get('/callLambdaService.html', function(request, response, next){
+    response.sendFile(path.join(__dirname+'/callLambdaService.html'));
 });
 app.get('/spinner.gif', function(request, response, next){
     response.sendFile(path.join(__dirname+'/spinner.gif'));
