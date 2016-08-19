@@ -34,7 +34,9 @@ Open the browser and give the url `http://localhost:port/botTest.html`, then we 
 - [x] Support formatted json request
 - [x] Support formatted json response
 - [x] Get entities/intent from the wit.ai and show it in response.
-- [ ] Show ajax request loading spinner and disable send message button.
+- [x] Show ajax request loading spinner and disable send message button.
+- [ ] Integrate with fb messenger.
+- [ ] Integrate with AWS Lmbada services.
 - [ ] Session/transaction management.
 - [ ] Custom functions should be able to invoke from wit.ai or shold be able to invoke based on entities/context.
 
