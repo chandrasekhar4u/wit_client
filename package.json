@@ -30,7 +30,8 @@
 	"websocket": "^1.0.23",
 	"cors": "^2.7.1",
 	"request": "^2.74.0",
-	"serve-favicon": "^2.3.0"
+	"serve-favicon": "^2.3.0",
+	"json-bigint": "^0.2.0"
   },
   "engines": {
     "node": ">=4.0.0"

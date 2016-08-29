@@ -1,47 +1,62 @@
-//import requried modules from library.
 module.exports = {
   log: require('./lib/log'),
   Wit: require('./lib/wit'),
   interactive: require('./lib/interactive')
 }
-//import body parser.
+'use strict';
+
 const bodyParser = require('body-parser');
-//initializing response object.
-var responseObj = {};
-// Webserver parameter
-const PORT = process.env.PORT || 8080;
-var SERVER_IP_ADDRESS = process.env.OPENSHIFT_NODEJS_IP || 'localhost';
-//import required dependencies.
 const crypto = require('crypto');
+const express = require('express');
 const fetch = require('node-fetch');
 const request = require('request');
-var express = require('express')
-  , cors = require('cors')
-  , app = express()
-  , favicon = require('serve-favicon')
-  , path = require("path");
-  
-//fix for security format exception from browser.
-app.use(cors());
-//fix for accessing favicon and showing in browserr.
-app.use(favicon(path.join(__dirname+'/favicon.ico')));
-//var initialization.
-let log = null;
+const JSONbig = require('json-bigint');
+
 let Wit = null;
+let log = null;
 try {
-  Wit = require('./').Wit;// if running from repo
+  // if running from repo
+  Wit = require('./').Wit;
   log = require('./').log;
 } catch (e) {
   Wit = require('node-wit').Wit;
   log = require('node-wit').log;
 }
-// Starting our webserver and putting it all together
-app.set('port', PORT);
-app.set('ipAddress', SERVER_IP_ADDRESS);
-app.listen(app.get('port'), app.get('ipAddress') );
-app.use(bodyParser.json());
 
-console.log("Server is wating for you @" + PORT);
+// Webserver parameter
+const PORT = process.env.PORT || 8080;
+var SERVER_IP_ADDRESS = process.env.OPENSHIFT_NODEJS_IP || 'localhost';
+
+let FB_VERIFY_TOKEN = 'VERIFY_TOKEN';
+crypto.randomBytes(8, (err, buff) => {
+  if (err) throw err;
+  FB_VERIFY_TOKEN = buff.toString('hex');
+  console.log(`/webhook will accept the Verify Token "${FB_VERIFY_TOKEN}"`);
+});
+
+// ----------------------------------------------------------------------------
+// Messenger API specific code
+// See the Send API reference
+// https://developers.facebook.com/docs/messenger-platform/send-api-reference
+const fbMessage = (id, text) => {
+  const body = JSON.stringify({
+    recipient: { id },
+    message: { text },
+  });
+  const qs = 'access_token=' + encodeURIComponent('ACCESS_TOKEN_NEED_TO_ADD');
+  return fetch('https://graph.facebook.com/v2.6/me/messages?' + qs, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body,
+  })
+  .then(rsp => rsp.json())
+  .then(json => {
+    if (json.error && json.error.message) {
+      throw new Error(json.error.message);
+    }
+    return json;
+  });
+};
 
 //get first entity valure from entities list.
 const firstEntityValue = (entities, entity) => {
@@ -55,13 +70,36 @@ const firstEntityValue = (entities, entity) => {
   return typeof val === 'object' ? val.value : val;
 };
 
+// ----------------------------------------------------------------------------
+// Wit.ai bot specific code
+// This will contain all user sessions.
+// Each session has an entry:
+// sessionId -> {fbid: facebookUserId, context: sessionState}
+const sessions = {};
+const findOrCreateSession = (fbid) => {
+  let sessionId;
+  // Let's see if we already have a session for the user fbid
+  Object.keys(sessions).forEach(k => {
+    if (sessions[k].fbid === fbid) {
+      // Yep, got it!
+      sessionId = k;
+    }
+  });
+  if (!sessionId) {
+    // No session found for user fbid, let's create a new one
+    sessionId = new Date().toISOString();
+    sessions[sessionId] = {fbid: fbid, context: {}};
+  }
+  return sessionId;
+};
 
 // Our bot actions
 const actions = {
   send({sessionId}, {text}) {
+	  console.log('inside actions send method of index.js:::: ');
     // Our bot has something to say!
     // Let's retrieve the Facebook user whose session belongs to
-    const recipientId = sessions[sessionId].fbid;
+    var recipientId = sessions[sessionId].fbid;
     if (recipientId) {
       // Yay, we found our recipient!
       // Let's forward our bot response to her.
@@ -82,110 +120,95 @@ const actions = {
       return Promise.resolve()
     }
   },
-  // You should implement your custom actions here
-  // See https://wit.ai/docs/quickstart
   
   //custom action called from wit.ai
-  ['getCreditCardDetails']({context, entities}) {
+  getCreditCardDetails({context, entities}) {
+	  delete context.cardNumber;
 	console.log('entities custom action: '+JSON.stringify(entities));
     return new Promise(function(resolve, reject) {
 	  console.log('entities custom action: '+JSON.stringify(entities));
       context.cardNumber = 'xxxx-xxxx-xxxx-'+Math.floor(1000 + Math.random() * 9000);
-	  responseObj.context = context;
-	  responseObj.entities = entities;
       return resolve(context);
+    });
+  },
+  
+  //custom action called from wit.ai
+  logout({context, entities}) {
+	console.log('entities custom action: '+JSON.stringify(entities));
+    return new Promise(function(resolve, reject) {
+	  delete sessions[sessionId];
+	  delete context.cardNumber;
+	  delete context.user_key;
+	  context.invalid=true;
+	  delete context.user_name;
+	  context.logout='logout';
+      return resolve(context);
+    });
+  },
+  
+ validateUserKey({context, entities}) {
+	delete context.user_key;
+	delete context.user_name;
+	console.log('entities custom action::::::::::::::::::::::: '+JSON.stringify(entities));
+    return new Promise(function(resolve, reject) {
+		var userPassKey = firstEntityValue(entities, "number");
+		console.log('userPassKey custom action:::::::::::::::::::::' + userPassKey);
+	if(userPassKey){
+		getLambdaAuthenticateUser(userPassKey,function(userName){
+		if(userName&&userName!==''){
+		  console.log('First Name:::::' + userName);
+	      context.user_key=userPassKey;
+	      context.user_name=userName; 
+		  delete context.cardNumber;
+		  context.invalid=false;
+		  return resolve(context);
+		}
+		});
+	}
+	context.invalid=true;
+	return resolve(context);
+    });
+  },
+  
+  getAccountSummary({context, entities}) {
+	console.log('entities custom action::::::::::::::::::::::: '+JSON.stringify(entities));
+    return new Promise(function(resolve, reject) {
+		var userPassKey = context.user_key;
+		console.log('userPassKey custom action:::::::::::::::::::::' + userPassKey);
+	if(userPassKey){
+		userName=context.user_name;
+		var accountType = firstEntityValue(entities, "account_type");
+		if(accountType.search(/checking/i)!==-1){
+			accountType='CHECKING';
+		}
+		else if(accountType.search(/savings/i)!==-1){
+			accountType='SAVINGS';
+		}
+		getLambdaAccountSummary(userPassKey, accountType, function(accDetails){
+		if(accDetails&&accDetails!==''){
+		  console.log('Account BALANCE:::::' + accDetails[0]['BALANCE']);
+		  context.accountBalance=accDetails[0]['BALANCE'];
+		  delete context.cardNumber;
+		  return resolve(context);
+		}
+		});
+	}else{
+		context.invalid=true;
+		return resolve(context);
+	}
     });
   },
 };
 
-
-//find or create session object (ISO date).
-const sessions = {};
-const findOrCreateSession = (sid) => {
-  let sessionId;
-  // Let's see if we already have a session for the user
-  Object.keys(sessions).forEach(k => {
-    if (sessions[k].sid === sid) {
-      // Yep, got it!
-      sessionId = k;
-    }
-  });
-    // No session found, let's create a new one
-	if (!sessionId) {
-    sessionId = new Date().toISOString();
-    sessions[sessionId] = { sessionId: sessionId,  context: { sid: sessionId } }; // set context, sessionId
-	}
-  return sessionId;
-};
-
-
-const findOrCreateFBSession = (fbid) => {
-  let sessionId;
-  // Let's see if we already have a session for the user fbid
-  Object.keys(sessions).forEach(k => {
-    if (sessions[k].fbid === fbid) {
-      // Yep, got it!
-      sessionId = k;
-    }
-  });
-  if (!sessionId) {
-    // No session found for user fbid, let's create a new one
-    sessionId = new Date().toISOString();
-    sessions[sessionId] = {fbid: fbid, context: {}};
-  }
-  return sessionId;
-};
-
-//TODO: move this to common static content handling.
-//allow static content to access from application.
-app.get('/botTest.html', function(request, response, next){
-    response.sendFile(path.join(__dirname+'/botTest.html'));
-});
-app.get('/callLambdaService.html', function(request, response, next){
-    response.sendFile(path.join(__dirname+'/callLambdaService.html'));
-});
-app.get('/spinner.gif', function(request, response, next){
-    response.sendFile(path.join(__dirname+'/spinner.gif'));
+// Setting up our bot
+const wit = new Wit({
+  accessToken: 'WIT_ACCESS_KEY_NEED_TO_ADD',
+  actions,
+  logger: new log.Logger(log.INFO)
 });
 
-// another example post service
-app.post('/webhook', (req, res, next) => {
-  res.send('"Only those who will risk going too far can possibly find out how far one can go." - Chandra');
-  next();
-});
-
-//::::::::::::::::::::::::::::::::::::::::::::
-//FB Messenger Code
-//::::::::::::::::::::::::::::::::::::::::::::
-
-
-// ----------------------------------------------------------------------------
-// Messenger API specific code
-
-// See the Send API reference
-// https://developers.facebook.com/docs/messenger-platform/send-api-reference
-
-const fbMessage = (id, text) => {
-  const body = JSON.stringify({
-    recipient: { id },
-    message: { text },
-  });
-  const qs = 'access_token=' + encodeURIComponent('ACCESS_TOKEN');
-  return fetch('https://graph.facebook.com/me/messages?' + qs, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body,
-  })
-  .then(rsp => rsp.json())
-  .then(json => {
-    if (json.error && json.error.message) {
-      throw new Error(json.error.message);
-    }
-    return json;
-  });
-};
-
-
+// Starting our webserver and putting it all together
+const app = express();
 app.use(({method, url}, rsp, next) => {
   rsp.on('finish', () => {
     console.log(`${rsp.statusCode} ${method} ${url}`);
@@ -197,7 +220,7 @@ app.use(bodyParser.json({ verify: verifyRequestSignature }));
 // Webhook setup
 app.get('/webhook', (req, res) => {
   if (req.query['hub.mode'] === 'subscribe' &&
-    req.query['hub.verify_token'] === 'VERIFY_TOKEN') {
+    req.query['hub.verify_token'] === FB_VERIFY_TOKEN) {
     res.send(req.query['hub.challenge']);
   } else {
     res.sendStatus(400);
@@ -209,24 +232,22 @@ app.post('/webhook', (req, res) => {
   // Parse the Messenger payload
   // See the Webhook reference
   // https://developers.facebook.com/docs/messenger-platform/webhook-reference
-  const data = req.body;
-  const wit = new Wit({accessToken: 'WIT_TOKEN', actions, logger: new log.Logger(log.INFO)});
-  
+  var data = req.body;
+  //const data = req.body;
+
   if (data.object === 'page') {
     data.entry.forEach(entry => {
       entry.messaging.forEach(event => {
-        if (event.message) {
+        if (event.message && !event.message.is_echo) {
           // Yay! We got a new message!
           // We retrieve the Facebook user ID of the sender
           const sender = event.sender.id;
-
           // We retrieve the user's current session, or create one if it doesn't exist
           // This is needed for our bot to figure out the conversation history
-          const sessionId = findOrCreateFBSession(sender);
-
+          const sessionId = findOrCreateSession(sender);
+		  console.log('Session ID::::::::::::::::::::: ' + sessionId);
           // We retrieve the message content
           const {text, attachments} = event.message;
-
           if (attachments) {
             // We received an attachment
             // Let's reply with an automatic message
@@ -234,7 +255,6 @@ app.post('/webhook', (req, res) => {
             .catch(console.error);
           } else if (text) {
             // We received a text message
-
             // Let's forward the message to the Wit.ai Bot Engine
             // This will run all actions until our bot has nothing left to do
             wit.runActions(
@@ -245,16 +265,30 @@ app.post('/webhook', (req, res) => {
               // Our bot did everything it has to do.
               // Now it's waiting for further messages to proceed.
               console.log('Waiting for next user messages');
-
               // Based on the session state, you might want to reset the session.
               // This depends heavily on the business logic of your bot.
               // Example:
               // if (context['done']) {
               //   delete sessions[sessionId];
               // }
-
               // Updating the user's current session state
               sessions[sessionId].context = context;
+			  if(sessionId){
+				  var current=new Date();
+				  var sessionStart=new Date(sessionId);
+				  console.log('Session Start Time::::::::::::::::::::: ' + sessionStart);
+				  console.log('Current Time::::::::::::::::::::: ' + current);
+				  var diff = Math.abs(sessionStart - current);
+				  var minutes = Math.floor((diff/1000)/60);
+				  console.log('Minutes in difference::::::::::::::::::::: ' + minutes);
+				  if(minutes>=3){
+					  delete sessions[sessionId];
+					  delete context.cardNumber;
+					  delete context.user_key;
+					  delete context.user_name;
+					  context.invalid=true;
+				  }
+			  }
             })
             .catch((err) => {
               console.error('Oops! Got an error from Wit: ', err.stack || err);
@@ -268,6 +302,47 @@ app.post('/webhook', (req, res) => {
   }
   res.sendStatus(200);
 });
+
+function getLambdaAuthenticateUser(userKey, callback) {
+	var res = '';
+	console.log('getLambdaAuthenticateUser called:::::::::'); 
+    request({
+        uri : 'https://hu4xwdeme9.execute-api.us-east-1.amazonaws.com/DEV/bankingbot/authenticateuser?userKey='+userKey,
+        method : 'GET'
+    }, function (error, response, body) {
+		if(error){
+        /*return*/ console.log('Error:', error);
+		}
+        if (!error && response.statusCode == 200) {
+			console.log('user Key is:'+userKey);
+			res = JSONbig.parse(body);
+			if(res && res[0]){
+			res=res[0]['FIRST_NAME']+' '+res[0]['LAST_NAME'];
+			console.log('response body FIRST NAME is:'+res);
+			}
+        }
+		callback(res);
+    });
+}
+
+function getLambdaAccountSummary(userKey, accountType, callback) {
+	console.log('getLambdaAccountSummary called:::::::::');
+    var options = {
+        uri : 'https://hu4xwdeme9.execute-api.us-east-1.amazonaws.com/DEV/bankingbot/accountsummary?userKey='+userKey,
+        method : 'GET'
+    }; 
+    var res = '';
+    request(options, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+			console.log('Account Summary Details:::: '+body);
+            res = JSONbig.parse(body);
+        }
+        else {
+            res = 'Not Found';
+        }
+        callback(res);
+    });
+}
 
 /*
  * Verify that the callback came from Facebook. Using the App Secret from
@@ -289,7 +364,7 @@ function verifyRequestSignature(req, res, buf) {
     var method = elements[0];
     var signatureHash = elements[1];
 
-    var expectedHash = crypto.createHmac('sha1', 'APP_SECRET')
+    var expectedHash = crypto.createHmac('sha1', 'APP_SECRET_NEED_TO_ADD')
                         .update(buf)
                         .digest('hex');
 
@@ -298,3 +373,6 @@ function verifyRequestSignature(req, res, buf) {
     }
   }
 }
+
+app.listen(PORT,SERVER_IP_ADDRESS);
+console.log('Listening on :' + PORT + '...');
