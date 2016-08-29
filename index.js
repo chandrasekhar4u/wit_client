@@ -141,12 +141,14 @@ const actions = {
 	  delete context.user_key;
 	  context.invalid=true;
 	  delete context.user_name;
+	  delete context.accountBalance;
 	  context.logout='logout';
       return resolve(context);
     });
   },
   
  validateUserKey({context, entities}) {
+	console.log(':::::::::::::::::::::::inside validateUserKey method::::::::::::::::::::::: ');
 	delete context.user_key;
 	delete context.user_name;
 	console.log('entities custom action::::::::::::::::::::::: '+JSON.stringify(entities));
@@ -160,13 +162,20 @@ const actions = {
 	      context.user_key=userPassKey;
 	      context.user_name=userName; 
 		  delete context.cardNumber;
-		  context.invalid=false;
+		  delete context.invalid;
+		  console.log('delete context.invalid;::::::::::::::::::::::: ');
 		  return resolve(context);
 		}
 		});
-	}
+	}else{
+	delete context.cardNumber;
+	delete context.user_key;
+	delete context.user_name;
+	delete context.accountBalance;
 	context.invalid=true;
+	console.log('context.invalid=true::::::::::::::::::::::: ');
 	return resolve(context);
+	}
     });
   },
   
@@ -193,6 +202,10 @@ const actions = {
 		}
 		});
 	}else{
+		delete context.cardNumber;
+	    delete context.user_key;
+		delete context.user_name;
+		delete context.accountBalance;
 		context.invalid=true;
 		return resolve(context);
 	}
