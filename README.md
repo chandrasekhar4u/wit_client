@@ -2,6 +2,7 @@
 :sunny: Nodejs application with a client which connects to wit.ai server and displays response in web client.
 
 [![Dependency Status](https://dependencyci.com/github/chandrasekhar4u/node_wit_client/badge)](https://dependencyci.com/github/chandrasekhar4u/node_wit_client)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bd9285faacdc4e26890660582e89e97a)](https://www.codacy.com/app/chandu624/wit_client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=chandrasekhar4u/wit_client&amp;utm_campaign=Badge_Grade)
 
 ## Usage & Deploying in Heroku :zap: 
 Install <a href="https://nodejs.org/en/download/" >node.js</a> <br/>
