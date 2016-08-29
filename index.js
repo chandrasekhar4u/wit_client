@@ -299,6 +299,7 @@ app.post('/webhook', (req, res) => {
 					  delete context.cardNumber;
 					  delete context.user_key;
 					  delete context.user_name;
+					  delete context.accountBalance;
 					  context.invalid=true;
 				  }
 			  }
